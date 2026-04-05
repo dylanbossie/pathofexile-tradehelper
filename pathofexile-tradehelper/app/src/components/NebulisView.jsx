@@ -1,14 +1,29 @@
+import { useState } from 'react'
 import { NEBULIS_SYNTH_IMPLICITS } from '../data/nebulisImplicits'
 
 /**
  * NebulisView — dedicated view for the Nebulis trade use case.
  *
  * Renders all possible synthesised implicits as labeled checkboxes.
- * All checkboxes start unchecked.
+ * Selection state is tracked locally via useState.
  * The "Generate Trade Link" button is visible but inert (no handler yet —
  * that is implemented in a follow-up issue).
  */
 function NebulisView() {
+  const [selectedIds, setSelectedIds] = useState(new Set())
+
+  function handleChange(id, checked) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
+  }
+
   return (
     <section aria-label="Nebulis">
       <h1>Nebulis</h1>
@@ -21,7 +36,8 @@ function NebulisView() {
                 type="checkbox"
                 id={implicit.id}
                 name={implicit.id}
-                defaultChecked={false}
+                checked={selectedIds.has(implicit.id)}
+                onChange={(e) => handleChange(implicit.id, e.target.checked)}
               />
               {' '}
               {implicit.label}

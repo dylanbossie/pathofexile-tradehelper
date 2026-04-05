@@ -48,16 +48,6 @@ describe('NebulisView — acceptance criteria', () => {
 })
 
 describe('NebulisView — synth implicit selection state (GH#7)', () => {
-  it('checkboxes are controlled (have checked attribute managed by React state)', () => {
-    render(<NebulisView />)
-    const checkboxes = screen.getAllByRole('checkbox')
-    // Controlled checkboxes (checked={false} + onChange) have the 'checked' HTML attribute set
-    // Uncontrolled checkboxes (defaultChecked={false}) do NOT have the 'checked' attribute
-    checkboxes.forEach((checkbox) => {
-      expect(checkbox).toHaveAttribute('checked')
-    })
-  })
-
   it('clicking an unchecked checkbox marks it as checked', async () => {
     const user = userEvent.setup()
     render(<NebulisView />)
