@@ -95,6 +95,37 @@ describe('NebulisView — synth implicit selection state (GH#7)', () => {
   })
 })
 
+describe('NebulisView — Nebulis item image (GH#9)', () => {
+  it('renders an img element with alt text "Nebulis"', () => {
+    render(<NebulisView />)
+    expect(screen.getByRole('img', { name: /nebulis/i })).toBeInTheDocument()
+  })
+
+  it('img src references a local asset (not an external URL)', () => {
+    render(<NebulisView />)
+    const img = screen.getByRole('img', { name: /nebulis/i })
+    const src = img.getAttribute('src')
+    expect(src).toBeTruthy()
+    expect(src).not.toMatch(/^https?:\/\//)
+  })
+
+  it('img has a fixed width between 100 and 200px', () => {
+    render(<NebulisView />)
+    const img = screen.getByRole('img', { name: /nebulis/i })
+    const width = img.getAttribute('width') || img.style.width
+    const widthNum = parseInt(width, 10)
+    expect(widthNum).toBeGreaterThanOrEqual(100)
+    expect(widthNum).toBeLessThanOrEqual(200)
+  })
+
+  it('checklist and Generate Trade Link button are still present alongside the image', () => {
+    render(<NebulisView />)
+    expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: /generate trade link/i })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /nebulis/i })).toBeInTheDocument()
+  })
+})
+
 describe('NEBULIS_SYNTH_IMPLICITS data', () => {
   it('is a non-empty array', () => {
     expect(Array.isArray(NEBULIS_SYNTH_IMPLICITS)).toBe(true)
