@@ -126,6 +126,87 @@ describe('NebulisView — Nebulis item image (GH#9)', () => {
   })
 })
 
+describe('NebulisView — Generate Trade Link button (GH#8)', () => {
+  it('does not render a trade query output when no implicits are selected', async () => {
+    render(<NebulisView />)
+    const button = screen.getByRole('button', { name: /generate trade link/i })
+    await userEvent.setup().click(button)
+    expect(screen.queryByRole('region', { name: /generated trade query/i })).not.toBeInTheDocument()
+  })
+
+  it('generates output with "min": 1 when 1 implicit is selected', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    const firstImplicit = NEBULIS_SYNTH_IMPLICITS[0]
+    await user.click(screen.getByLabelText(firstImplicit.label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    expect(parsed.query.stats[0].value.min).toBe(1)
+  })
+
+  it('generates output with "min": 2 when 2 implicits are selected', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[0].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[1].label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    expect(parsed.query.stats[0].value.min).toBe(2)
+  })
+
+  it('generates output with "min": 3 when 3 implicits are selected', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[0].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[1].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[2].label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    expect(parsed.query.stats[0].value.min).toBe(3)
+  })
+
+  it('generates output with "min": 3 when more than 3 implicits are selected', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[0].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[1].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[2].label))
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[3].label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    expect(parsed.query.stats[0].value.min).toBe(3)
+  })
+
+  it('generated output uses filter type "count"', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    await user.click(screen.getByLabelText(NEBULIS_SYNTH_IMPLICITS[0].label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    expect(parsed.query.stats[0].type).toBe('count')
+  })
+
+  it('generated output contains stat IDs for each selected implicit', async () => {
+    const user = userEvent.setup()
+    render(<NebulisView />)
+    const selected = NEBULIS_SYNTH_IMPLICITS.slice(0, 2)
+    await user.click(screen.getByLabelText(selected[0].label))
+    await user.click(screen.getByLabelText(selected[1].label))
+    await user.click(screen.getByRole('button', { name: /generate trade link/i }))
+    const output = screen.getByRole('region', { name: /generated trade query/i })
+    const parsed = JSON.parse(output.textContent)
+    const filterIds = parsed.query.stats[0].filters.map((f) => f.id)
+    selected.forEach((implicit) => {
+      expect(filterIds).toContain(`implicit.stat_${implicit.id}`)
+    })
+  })
+})
+
 describe('NEBULIS_SYNTH_IMPLICITS data', () => {
   it('is a non-empty array', () => {
     expect(Array.isArray(NEBULIS_SYNTH_IMPLICITS)).toBe(true)

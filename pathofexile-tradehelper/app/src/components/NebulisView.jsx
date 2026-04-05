@@ -7,11 +7,12 @@ import nebulisImage from '../assets/nebulis.png'
  *
  * Renders all possible synthesised implicits as labeled checkboxes.
  * Selection state is tracked locally via useState.
- * The "Generate Trade Link" button is visible but inert (no handler yet —
- * that is implemented in a follow-up issue).
+ * The "Generate Trade Link" button builds a PoE trade count query payload
+ * from the selected implicits and displays it below the button.
  */
 function NebulisView() {
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [generatedQuery, setGeneratedQuery] = useState(null)
 
   function handleChange(id, checked) {
     setSelectedIds((prev) => {
@@ -23,6 +24,32 @@ function NebulisView() {
       }
       return next
     })
+  }
+
+  function handleGenerateTradeLink() {
+    if (selectedIds.size === 0) {
+      return
+    }
+
+    const filters = Array.from(selectedIds).map((id) => ({
+      id: `implicit.stat_${id}`,
+    }))
+
+    const min = Math.min(3, selectedIds.size)
+
+    const payload = {
+      query: {
+        stats: [
+          {
+            type: 'count',
+            filters,
+            value: { min },
+          },
+        ],
+      },
+    }
+
+    setGeneratedQuery(JSON.stringify(payload, null, 2))
   }
 
   return (
@@ -48,7 +75,12 @@ function NebulisView() {
               </li>
             ))}
           </ul>
-          <button type="button">Generate Trade Link</button>
+          <button type="button" onClick={handleGenerateTradeLink}>Generate Trade Link</button>
+          {generatedQuery !== null && (
+            <section aria-label="Generated Trade Query">
+              <pre>{generatedQuery}</pre>
+            </section>
+          )}
         </div>
         <img
           src={nebulisImage}
